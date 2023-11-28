@@ -1,0 +1,1 @@
+print("Geile brabus gönner, fickschlamppe, börsechaufer")
