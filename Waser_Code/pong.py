@@ -2,111 +2,112 @@ import pygame
 import sys
 import random
 
-# Initialisierung von Pygame
+# Initialize Pygame
 pygame.init()
 
-# Konstanten
+# Constants
 WIDTH, HEIGHT = 800, 600
-GRID_SIZE = 20
-SNAKE_SIZE = 20
-SNAKE_SPEED = 15
-
-# Farben
-BLACK = (0, 0, 0)
+BALL_RADIUS = 15
+PADDLE_WIDTH, PADDLE_HEIGHT = 15, 100
+FPS = 60
 WHITE = (255, 255, 255)
-RED = (255, 0, 0)
+FONT_SIZE = 36
 
-# Richtungen
-UP = (0, -1)
-DOWN = (0, 1)
-LEFT = (-1, 0)
-RIGHT = (1, 0)
-
-class Snake:
-    def __init__(self):
-        self.length = 1
-        self.positions = [((WIDTH // 2), (HEIGHT // 2))]
-        self.direction = random.choice([UP, DOWN, LEFT, RIGHT])
-        self.color = WHITE
-
-    def get_head_position(self):
-        return self.positions[0]
-
-    def update(self):
-        cur = self.get_head_position()
-        x, y = self.direction
-        new = (((cur[0] + (x * SNAKE_SIZE)) % WIDTH), (cur[1] + (y * SNAKE_SIZE)) % HEIGHT)
-        if len(self.positions) > 2 and new in self.positions[2:]:
-            self.reset()
-        else:
-            self.positions.insert(0, new)
-            if len(self.positions) > self.length:
-                self.positions.pop()
-
-    def reset(self):
-        self.length = 1
-        self.positions = [((WIDTH // 2), (HEIGHT // 2))]
-        self.direction = random.choice([UP, DOWN, LEFT, RIGHT])
-
-    def render(self, surface):
-        for p in self.positions:
-            pygame.draw.rect(surface, self.color, (p[0], p[1], SNAKE_SIZE, SNAKE_SIZE))
-
-class Food:
-    def __init__(self):
-        self.position = (0, 0)
-        self.color = RED
-        self.randomize_position()
-
-    def randomize_position(self):
-        self.position = (random.randint(0, (WIDTH // GRID_SIZE) - 1) * GRID_SIZE,
-                         random.randint(0, (HEIGHT // GRID_SIZE) - 1) * GRID_SIZE)
-
-    def render(self, surface):
-        pygame.draw.rect(surface, self.color, (self.position[0], self.position[1], SNAKE_SIZE, SNAKE_SIZE))
-
-# Erstelle ein Fenster
+# Create the screen
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption('Snake')
+pygame.display.set_caption("Pong Game")
 
+# Clock to control the frame rate
 clock = pygame.time.Clock()
 
-snake = Snake()
-food = Food()
+# Initialize paddles and ball
+player_paddle = pygame.Rect(50, HEIGHT // 2 - PADDLE_HEIGHT // 2, PADDLE_WIDTH, PADDLE_HEIGHT)
+opponent_paddle = pygame.Rect(WIDTH - 50 - PADDLE_WIDTH, HEIGHT // 2 - PADDLE_HEIGHT // 2, PADDLE_WIDTH, PADDLE_HEIGHT)
+ball = pygame.Rect(WIDTH // 2 - BALL_RADIUS // 2, HEIGHT // 2 - BALL_RADIUS // 2, BALL_RADIUS, BALL_RADIUS)
 
-# Spiel-Loop
+# Initial ball speed
+ball_speed = [5, 5]
+
+# Scores
+player_score = 0
+opponent_score = 0
+
+# Font for scoring
+font = pygame.font.Font(None, FONT_SIZE)
+
+# Game loop
 while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
             sys.exit()
-        elif event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_UP and snake.direction != DOWN:
-                snake.direction = UP
-            if event.key == pygame.K_DOWN and snake.direction != UP:
-                snake.direction = DOWN
-            if event.key == pygame.K_LEFT and snake.direction != RIGHT:
-                snake.direction = LEFT
-            if event.key == pygame.K_RIGHT and snake.direction != LEFT:
-                snake.direction = RIGHT
 
-    snake.update()
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_UP] and player_paddle.top > 0:
+        player_paddle.y -= 5
+    if keys[pygame.K_DOWN] and player_paddle.bottom < HEIGHT:
+        player_paddle.y += 5
 
-    # Kollision mit der Nahrung
-    if snake.get_head_position() == food.position:
-        snake.length += 1
-        food.randomize_position()
+    # Ball movement
+    ball.x += ball_speed[0]
+    ball.y += ball_speed[1]
 
-    # Zeichne den Hintergrund
-    screen.fill(BLACK)
+    # Ball collisions with walls
+    if ball.top <= 0 or ball.bottom >= HEIGHT:
+        ball_speed[1] = -ball_speed[1]
 
-    # Zeichne die Schlange und die Nahrung
-    snake.render(screen)
-    food.render(screen)
+    # Ball collisions with paddles
+    if ball.colliderect(player_paddle):
+        ball_speed[0] = -ball_speed[0]
+    elif ball.colliderect(opponent_paddle):
+        ball_speed[0] = -ball_speed[0]
 
-    # Aktualisiere den Bildschirm
+    # Score points
+    if ball.left <= 0:
+        opponent_score += 1
+        ball = pygame.Rect(WIDTH // 2 - BALL_RADIUS // 2, HEIGHT // 2 - BALL_RADIUS // 2, BALL_RADIUS, BALL_RADIUS)
+    elif ball.right >= WIDTH:
+        player_score += 1
+        ball = pygame.Rect(WIDTH // 2 - BALL_RADIUS // 2, HEIGHT // 2 - BALL_RADIUS // 2, BALL_RADIUS, BALL_RADIUS)
+
+    # Opponent AI
+    if opponent_paddle.centery < ball.centery and opponent_paddle.bottom < HEIGHT:
+        opponent_paddle.y += 5
+    elif opponent_paddle.centery > ball.centery and opponent_paddle.top > 0:
+        opponent_paddle.y -= 5
+
+    # Draw everything
+    screen.fill((0, 0, 0))
+    pygame.draw.rect(screen, WHITE, player_paddle)
+    pygame.draw.rect(screen, WHITE, opponent_paddle)
+    pygame.draw.ellipse(screen, WHITE, ball)
+
+    # Draw scores
+    player_text = font.render(str(player_score), True, WHITE)
+    opponent_text = font.render(str(opponent_score), True, WHITE)
+    screen.blit(player_text, (WIDTH // 4, 20))
+    screen.blit(opponent_text, (3 * WIDTH // 4 - FONT_SIZE // 2, 20))
+
+    # Update the display
     pygame.display.flip()
 
-    # Begrenze die Aktualisierungsrate
-    clock.tick(SNAKE_SPEED)
-print("Geile brabus gönner, fickschlamppe, börsechaufer")
+    # Set the frame rate
+    clock.tick(FPS)
+
+    # Game loop
+    running = True
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    running = False
+
+        # Clear the screen
+        screen.fill((255, 255, 255))
+
+        # Draw other game elements here
+
+        # Update the display
+        pygame.display.flip()
