@@ -35,12 +35,13 @@ opponent_score = 0
 # Font for scoring
 font = pygame.font.Font(None, FONT_SIZE)
 
+
 # Game loop
-while True:
+running = True
+while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            pygame.quit()
-            sys.exit()
+            running = False
 
     keys = pygame.key.get_pressed()
     if keys[pygame.K_UP] and player_paddle.top > 0:
@@ -93,21 +94,4 @@ while True:
 
     # Set the frame rate
     clock.tick(FPS)
-
-    # Game loop
-    running = True
-    while running:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE:
-                    running = False
-
-        # Clear the screen
-        screen.fill((255, 255, 255))
-
-        # Draw other game elements here
-
-        # Update the display
-        pygame.display.flip()
+    
