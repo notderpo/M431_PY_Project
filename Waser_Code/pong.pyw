@@ -1,6 +1,5 @@
 import pygame
 import sys
-import random
 
 # Initialize Pygame
 pygame.init()
@@ -9,7 +8,7 @@ pygame.init()
 WIDTH, HEIGHT = 800, 600
 BALL_RADIUS = 15
 PADDLE_WIDTH, PADDLE_HEIGHT = 15, 100
-FPS = 60
+FPS = 90  # Increased the frame rate
 WHITE = (255, 255, 255)
 FONT_SIZE = 36
 
@@ -23,10 +22,15 @@ clock = pygame.time.Clock()
 # Initialize paddles and ball
 player_paddle = pygame.Rect(50, HEIGHT // 2 - PADDLE_HEIGHT // 2, PADDLE_WIDTH, PADDLE_HEIGHT)
 opponent_paddle = pygame.Rect(WIDTH - 50 - PADDLE_WIDTH, HEIGHT // 2 - PADDLE_HEIGHT // 2, PADDLE_WIDTH, PADDLE_HEIGHT)
-ball = pygame.Rect(WIDTH // 2 - BALL_RADIUS // 2, HEIGHT // 2 - BALL_RADIUS // 2, BALL_RADIUS, BALL_RADIUS)
 
-# Initial ball speed
-ball_speed = [5, 5]
+# Initial spawn locations for the ball
+player_ball_spawn = (WIDTH // 4, HEIGHT // 2 - BALL_RADIUS // 2)
+opponent_ball_spawn = (3 * WIDTH // 4, HEIGHT // 2 - BALL_RADIUS // 2)
+
+ball = pygame.Rect(player_ball_spawn[0], player_ball_spawn[1], BALL_RADIUS, BALL_RADIUS)
+
+# Increased ball speed
+ball_speed = [4, 4]
 
 # Scores
 player_score = 0
@@ -35,6 +39,9 @@ opponent_score = 0
 # Font for scoring
 font = pygame.font.Font(None, FONT_SIZE)
 
+# Paddle speeds
+player_paddle_speed = 5  # Increased player paddle speed
+opponent_paddle_speed = 4  # Slightly increased opponent paddle speed
 
 # Game loop
 running = True
@@ -45,9 +52,9 @@ while running:
 
     keys = pygame.key.get_pressed()
     if keys[pygame.K_UP] and player_paddle.top > 0:
-        player_paddle.y -= 5
+        player_paddle.y -= player_paddle_speed
     if keys[pygame.K_DOWN] and player_paddle.bottom < HEIGHT:
-        player_paddle.y += 5
+        player_paddle.y += player_paddle_speed
 
     # Ball movement
     ball.x += ball_speed[0]
@@ -59,23 +66,23 @@ while running:
 
     # Ball collisions with paddles
     if ball.colliderect(player_paddle):
-        ball_speed[0] = -ball_speed[0]
+        ball_speed[0] = abs(ball_speed[0])  # Change the sign of the x-direction
     elif ball.colliderect(opponent_paddle):
-        ball_speed[0] = -ball_speed[0]
+        ball_speed[0] = -abs(ball_speed[0])  # Change the sign of the x-direction
 
     # Score points
     if ball.left <= 0:
         opponent_score += 1
-        ball = pygame.Rect(WIDTH // 2 - BALL_RADIUS // 2, HEIGHT // 2 - BALL_RADIUS // 2, BALL_RADIUS, BALL_RADIUS)
+        ball = pygame.Rect(opponent_ball_spawn[0], opponent_ball_spawn[1], BALL_RADIUS, BALL_RADIUS)
     elif ball.right >= WIDTH:
         player_score += 1
-        ball = pygame.Rect(WIDTH // 2 - BALL_RADIUS // 2, HEIGHT // 2 - BALL_RADIUS // 2, BALL_RADIUS, BALL_RADIUS)
+        ball = pygame.Rect(player_ball_spawn[0], player_ball_spawn[1], BALL_RADIUS, BALL_RADIUS)
 
-    # Opponent AI
+    # Opponent AI with increased speed
     if opponent_paddle.centery < ball.centery and opponent_paddle.bottom < HEIGHT:
-        opponent_paddle.y += 5
+        opponent_paddle.y += opponent_paddle_speed
     elif opponent_paddle.centery > ball.centery and opponent_paddle.top > 0:
-        opponent_paddle.y -= 5
+        opponent_paddle.y -= opponent_paddle_speed
 
     # Draw everything
     screen.fill((0, 0, 0))
@@ -94,4 +101,6 @@ while running:
 
     # Set the frame rate
     clock.tick(FPS)
-    
+
+pygame.quit()
+sys.exit()
