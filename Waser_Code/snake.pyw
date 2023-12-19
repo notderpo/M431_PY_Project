@@ -18,6 +18,19 @@ dis_height = 400
 dis = pygame.display.set_mode((dis_width, dis_height))
 pygame.display.set_caption('Snake Game by OpenAI GPT-3')
 
+# Set initial window position
+window_position = (100, 100)
+dis.set_alpha(0) # make the window background transparent
+dis.set_colorkey(black) # set black color as transparent
+dis.set_mode((dis_width, dis_height), pygame.NOFRAME)
+dis.set_alpha(None) # reset alpha
+
+# Move the window to the specified position
+pygame.display.set_mode((dis_width, dis_height), pygame.NOFRAME)
+pygame.display.set_mode((dis_width, dis_height), pygame.NOFRAME, window_position)
+
+pygame.display.set_caption('Snake Game by OpenAI GPT-3')
+
 # Snake properties
 snake_block = 10
 snake_speed = 15
