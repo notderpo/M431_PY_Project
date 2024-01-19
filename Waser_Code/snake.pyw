@@ -29,7 +29,7 @@ dis.set_alpha(None) # reset alpha
 pygame.display.set_mode((dis_width, dis_height), pygame.NOFRAME)
 pygame.display.set_mode((dis_width, dis_height), pygame.NOFRAME, window_position)
 
-pygame.display.set_caption('Snake Game by OpenAI GPT-3')
+pygame.display.set_caption('Snake Game')
 
 # Snake properties
 snake_block = 10
