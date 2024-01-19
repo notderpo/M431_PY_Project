@@ -1,6 +1,3 @@
-"""Pacman, classic arcade game.
-"""
-
 from random import choice
 from turtle import *
 
